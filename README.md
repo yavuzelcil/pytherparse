@@ -7,46 +7,46 @@
 - High performance using Rust's `etherparse` crate.
 - Easy-to-use Python interface.
 
-## Installation
 
-To install `pytherparse`, you need to have Rust and Python installed on your system. You can build and install the package using [Maturin](https://github.com/PyO3/maturin):
-
-```bash
-# Install maturin if not already installed
-pip install maturin
-
-# Build and install pytherparse
-maturin develop
-
-``` 
 
 ## Usage
 
-Here’s an example of how to use `pytherparse` to parse a network packet:
+You can use `pytherparse` directly in your Python code or test it using the provided `test_parse.py` script.
+
+### Example: Using `test_parse.py`
+
+The `test_parse.py` script demonstrates how to parse a network packet using `pytherparse`. Here's how you can run it:
+
+1. Make sure you have installed `pytherparse` using `maturin develop`.
+2. Navigate to the `tests` directory.
+3. Run the script:
+
+```bash
+python test_parse.py
+```
+
+### Example Script (`test_parse.py`)
 
 ```python
 import pytherparse
 
-# Example packet data (Ethernet + IP + TCP headers)
-packet_data = b'\x00\x1a\xa0\x00\x00\x01\x00\x1a\xa0\x00\x00\x02\x08\x00' \
-              b'\x45\x00\x00\x28\x6f\x22\x40\x00\x40\x06\xb1\xe6\xc0\xa8' \
-              b'\x00\x01\xc0\xa8\x00\x02\x04\xd2\x00\x50\x00\x00\x00\x00' \
-              b'\x00\x00\x00\x00\x50\x02\x20\x00\x91\x7c\x00\x00'
+# Example packet data (Ethernet + IP + TCP headers) in hexadecimal format
+packet = bytes.fromhex("00005e0001ce6a05e395f3f9080045000028000040004006d99d8d52ac193424f3a2f53501bb626f575200000000500400009dfb0000")
 
 # Parse the packet
-result = pytherparse.parse_packet(packet_data)
-
-# Print the parsed headers
-print(result)
+print(pytherparse.parse_packet(packet))
 ```
 
 ### Example Output:
 ```
-Ethernet Header: Ethernet2Header { destination: [0, 26, 160, 0, 0, 1], source: [0, 26, 160, 0, 0, 2], ethertype: IPv4 }
-IP Header: Ipv4Header { source: 192.168.0.1, destination: 192.168.0.2, protocol: TCP }
-Transport Header: TcpHeader { source_port: 1234, destination_port: 80 }
+Ethernet Header: Ethernet2Header { destination: [0, 0, 94, 0, 1, 206], source: [106, 5, 227, 149, 243, 249], ethertype: IPv4 }
+IP Header: Ipv4Header { source: 141.82.172.25, destination: 52.36.243.162, protocol: TCP }
+Transport Header: TcpHeader { source_port: 21333, destination_port: 443 }
 ```
 
+This script is a quick way to test the functionality of `pytherparse` with sample packet data.
+
+Here’s an example of how to use `pytherparse` to parse a network packet:
 
 
 ## License
