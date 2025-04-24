@@ -1,5 +1,0 @@
-import pytherparse
-
-packet = bytes.fromhex("00005e0001ce6a05e395f3f9080045000028000040004006d99d8d52ac193424f3a2f53501bb626f575200000000500400009dfb0000")
-
-print(pytherparse.parse_packet(packet))
