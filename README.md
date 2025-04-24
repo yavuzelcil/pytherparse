@@ -47,18 +47,7 @@ IP Header: Ipv4Header { source: 192.168.0.1, destination: 192.168.0.2, protocol:
 Transport Header: TcpHeader { source_port: 1234, destination_port: 80 }
 ```
 
-## Development
 
-To contribute to `pytherparse`, clone the repository and make your changes. Use `maturin develop` to test your changes locally.
-
-```bash
-# Clone the repository
-git clone https://github.com/yourusername/pytherparse.git
-cd pytherparse
-
-# Install the package locally
-maturin develop
-```
 
 ## License
 
