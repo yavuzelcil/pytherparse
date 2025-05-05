@@ -2,6 +2,8 @@
 
 `pytherparse` provides Python bindings for the `etherparse` Rust crate, enabling high-performance packet parsing in Python via Rust and `pyo3`. This library is designed for developers working with network packets who need a fast and reliable way to parse Ethernet, IP, and transport layer headers.
 
+> **Note**: Internally, the compiled Rust extension is named `pytherparse_native`, but it is exposed to Python via the `pytherparse` package using an interface defined in `__init__.py`.
+
 ## Features
 - Parse Ethernet, IP, and transport layer headers.
 - High performance using Rust's `etherparse` crate.
@@ -13,41 +15,31 @@
 
 You can use `pytherparse` directly in your Python code or test it using the provided `test_parse.py` script.
 
-### Example: Using `test_parse.py`
-
-The `test_parse.py` script demonstrates how to parse a network packet using `pytherparse`. Here's how you can run it:
-
-1. Make sure you have installed `pytherparse` using `maturin develop`.
-2. Navigate to the `tests` directory.
-3. Run the script:
-
-```bash
-python test_parse.py
-```
-
-### Example Script (`test_parse.py`)
+### Example: Parsing raw packet bytes
 
 ```python
 import pytherparse
 
-# Example packet data (Ethernet + IP + TCP headers) in hexadecimal format
+# Parse a packet from raw bytes
 packet = bytes.fromhex("00005e0001ce6a05e395f3f9080045000028000040004006d99d8d52ac193424f3a2f53501bb626f575200000000500400009dfb0000")
 
-# Parse the packet
-print(pytherparse.parse_packet(packet))
+parsed = pytherparse.parse(packet)
+print(parsed.ip.source)
 ```
 
-### Example Output:
+### Example: Parsing packets from a PCAP file
+
+```python
+# Or parse packets from a pcap file
+packets = pytherparse.parse("example.pcap")
+for pkt in packets:
+    if pkt.ip:
+        print(f"{pkt.ip.source} → {pkt.ip.destination}")
 ```
-Ethernet Header: Ethernet2Header { destination: [0, 0, 94, 0, 1, 206], source: [106, 5, 227, 149, 243, 249], ethertype: IPv4 }
-IP Header: Ipv4Header { source: 141.82.172.25, destination: 52.36.243.162, protocol: TCP }
-Transport Header: TcpHeader { source_port: 21333, destination_port: 443 }
-```
 
-This script is a quick way to test the functionality of `pytherparse` with sample packet data.
+### Installation Note
 
-Here’s an example of how to use `pytherparse` to parse a network packet:
-
+Make sure you have installed `pytherparse` using `maturin develop`. Due to PyO3 import conflicts, the compiled Rust extension module is named `pytherparse_native`, but you should always import from the `pytherparse` package as shown above.
 
 ## License
 
@@ -57,4 +49,3 @@ This project is licensed under the MIT License. See the [LICENSE](LICENSE) file 
 
 - [etherparse](https://github.com/rusticata/etherparse) for the Rust packet parsing library.
 - [pyo3](https://pyo3.rs/) for enabling seamless Rust-Python bindings.
-
