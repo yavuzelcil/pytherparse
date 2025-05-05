@@ -4,11 +4,14 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
+name = "pytherparse_native"
 crate-type =["cdylib"]
 
 [dependencies]
-pyo3 = { version= "0.21", features = ["extension-module"] }
+pyo3 = { version= "0.23", features = ["extension-module"] }
 etherparse = "0.13"
+clap = { version = "4.4", features = ["derive"] }
+pcap = "2.2.0"
 
 [package.metadata.maturin]
 name = "pytherparse"

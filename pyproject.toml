@@ -10,3 +10,6 @@ authors = [{name = "Yavuz Elcil"}]
 license = "MIT"
 readme = "README.md"
 requires-python = ">=3.8"
+
+[tool.maturin]
+module-name = "pytherparse.pytherparse_native"
