@@ -105,12 +105,10 @@ pub fn parse_packet(data: &[u8]) -> PyResult<ParsedPacket> {
 pub fn parse_pcap_file(py: Python<'_>, path: String) -> PyResult<Py<PyList>> {
     let mut packets = Vec::new();
 
-    // Pcap dosyasını aç
     let mut cap = Capture::from_file(path).map_err(|e| {
         pyo3::exceptions::PyIOError::new_err(format!("Failed to open pcap file: {}", e))
     })?;
 
-    // Paketleri sırayla oku ve parse et
     while let Ok(packet) = cap.next_packet() {
         if let Ok(headers) = PacketHeaders::from_ethernet_slice(&packet.data) {
             let parsed = ParsedPacket {
