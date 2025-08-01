@@ -71,6 +71,24 @@ impl From<etherparse::Ethernet2Header> for PyEthernetHeader {
 
 #[pyclass]
 #[derive(Debug, Clone)]
+pub struct PyIcmpv6Header {
+    #[pyo3(get)]
+    pub checksum: u16,
+    #[pyo3(get)]
+    pub type_str: String,
+}
+
+impl From<etherparse::Icmpv6Header> for PyIcmpv6Header {
+    fn from(header: etherparse::Icmpv6Header) -> Self {
+        PyIcmpv6Header {
+            checksum: header.checksum,
+            type_str: format!("{:?}", header.icmp_type),
+        }
+    }
+}
+
+#[pyclass]
+#[derive(Debug, Clone)]
 pub struct ParsedPacket {
     #[pyo3(get)]
     pub link: Option<PyEthernetHeader>,
@@ -78,12 +96,18 @@ pub struct ParsedPacket {
     pub ip: Option<PyIpv4Header>,
     #[pyo3(get)]
     pub transport: Option<PyTcpHeader>,
+    #[pyo3(get)]
+    pub icmpv6: Option<PyIcmpv6Header>,
 }
 
 #[pyfunction]
 pub fn parse_packet(data: &[u8]) -> PyResult<ParsedPacket> {
     match PacketHeaders::from_ethernet_slice(data) {
         Ok(headers) => {
+            let icmpv6 = match &headers.transport {
+                Some(TransportHeader::Icmpv6(icmpv6)) => Some(PyIcmpv6Header::from(icmpv6.clone())),
+                _ => None,
+            };
             let parsed = ParsedPacket {
                 link: headers.link.map(PyEthernetHeader::from),
                 ip: match headers.ip {
@@ -94,6 +118,7 @@ pub fn parse_packet(data: &[u8]) -> PyResult<ParsedPacket> {
                     Some(TransportHeader::Tcp(tcp)) => Some(PyTcpHeader::from(tcp)),
                     _ => None,
                 },
+                icmpv6,
             };
             Ok(parsed)
         },
@@ -111,6 +136,10 @@ pub fn parse_pcap_file(py: Python<'_>, path: String) -> PyResult<Py<PyList>> {
 
     while let Ok(packet) = cap.next_packet() {
         if let Ok(headers) = PacketHeaders::from_ethernet_slice(&packet.data) {
+            let icmpv6 = match &headers.transport {
+                Some(TransportHeader::Icmpv6(icmpv6)) => Some(PyIcmpv6Header::from(icmpv6.clone())),
+                _ => None,
+            };
             let parsed = ParsedPacket {
                 link: headers.link.map(PyEthernetHeader::from),
                 ip: match headers.ip {
@@ -121,6 +150,7 @@ pub fn parse_pcap_file(py: Python<'_>, path: String) -> PyResult<Py<PyList>> {
                     Some(TransportHeader::Tcp(tcp)) => Some(PyTcpHeader::from(tcp)),
                     _ => None,
                 },
+                icmpv6,
             };
             packets.push(parsed);
         }
@@ -143,5 +173,6 @@ fn pytherparse_native(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_class::<PyIpv4Header>()?;
     m.add_class::<PyTcpHeader>()?;
     m.add_class::<PyEthernetHeader>()?;
+    m.add_class::<PyIcmpv6Header>()?;
     Ok(())
 }
