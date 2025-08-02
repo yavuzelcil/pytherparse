@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use etherparse::{PacketHeaders, IpHeader, TransportHeader, InternetSlice};
+use etherparse::{PacketHeaders, IpHeader, TransportHeader};
 use pcap::Capture;
 
 #[pyclass]
