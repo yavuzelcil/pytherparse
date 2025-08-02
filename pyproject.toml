@@ -12,5 +12,4 @@ readme = "README.md"
 requires-python = ">=3.8"
 
 [tool.maturin]
-module-name = "pytherparse.pytherparse_native"
-features = ["pyo3/extension-module"]
+bindings = "pyo3"
