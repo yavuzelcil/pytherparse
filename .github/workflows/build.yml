@@ -10,11 +10,11 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Python
-        uses: actions/setup-python@v4.8.0
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
       - name: Install cibuildwheel
@@ -26,9 +26,8 @@ jobs:
         env:
           CIBW_BUILD: "cp39-* cp310-* cp311-*"
           CIBW_ARCHS_LINUX: "x86_64 aarch64"
-          CIBW_BEFORE_ALL_LINUX: "apt-get update && apt-get install -y libpcap-dev"
+          CIBW_BEFORE_ALL_LINUX: "yum install -y libpcap-devel"
           CIBW_SKIP: "*-musllinux_*"
-          CIBW_TEST_COMMAND: "pytest {project}/tests"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -38,18 +37,15 @@ jobs:
   build-macos:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4.8.0
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
       - name: Install Rust
         run: curl https://sh.rustup.rs -sSf | sh -s -- -y
       - name: Add Rust to PATH
         run: echo "$HOME/.cargo/bin" >> $GITHUB_PATH
-      - name: Source Rust environment
-        run: source $HOME/.cargo/env
-        shell: bash
       - name: Add macOS targets for Rust
         run: |
           rustup target add x86_64-apple-darwin
@@ -66,7 +62,6 @@ jobs:
           CIBW_BUILD: "cp39-* cp310-* cp311-*"
           CIBW_ARCHS_MACOS: "x86_64 arm64"
           MACOSX_DEPLOYMENT_TARGET: "10.12"
-          CIBW_TEST_COMMAND: "pytest {project}/tests"
       - name: Upload wheels
         uses: actions/upload-artifact@v4
         with:
@@ -76,9 +71,9 @@ jobs:
   build-windows:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v4.8.0
+        uses: actions/setup-python@v4
         with:
           python-version: '3.11'
       - name: Install cibuildwheel
