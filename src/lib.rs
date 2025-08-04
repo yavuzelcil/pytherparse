@@ -1,6 +1,9 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
 use etherparse::{PacketHeaders, IpHeader, TransportHeader};
+
+// pcap is only imported on Unix systems
+#[cfg(unix)]
 use pcap::Capture;
 
 #[pyclass]
@@ -126,6 +129,8 @@ pub fn parse_packet(data: &[u8]) -> PyResult<ParsedPacket> {
     }
 }
 
+// Real implementation for Unix systems
+#[cfg(unix)]
 #[pyfunction]
 pub fn parse_pcap_file(py: Python<'_>, path: String) -> PyResult<Py<PyList>> {
     let mut packets = Vec::new();
@@ -161,8 +166,17 @@ pub fn parse_pcap_file(py: Python<'_>, path: String) -> PyResult<Py<PyList>> {
         .map(|pkt| Py::new(py, pkt).unwrap())
         .collect();
 
-    let list = PyList::new(py, py_packets)?; // Bound<'_, PyList>
-    Ok(list.into())                          // Py<PyList>
+    let list = PyList::new(py, py_packets)?;
+    Ok(list.into())
+}
+
+// Stub function for Windows systems
+#[cfg(windows)]
+#[pyfunction]
+pub fn parse_pcap_file(_py: Python<'_>, _path: String) -> PyResult<Py<PyList>> {
+    Err(pyo3::exceptions::PyNotImplementedError::new_err(
+        "parse_pcap_file is not supported on Windows.",
+    ))
 }
 
 #[pymodule]
