@@ -4,7 +4,7 @@ build-backend = "maturin"
 
 [project]
 name = "pytherparse"
-version = "0.1.1"
+version = "0.1.2"
 description = "Python interface to etherparse (Rust-based packet parser)"
 authors = [{name = "Yavuz Elcil"}]
 license = "MIT"
