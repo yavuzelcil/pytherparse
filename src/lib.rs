@@ -1,6 +1,6 @@
 use pyo3::prelude::*;
 use pyo3::types::PyList;
-use etherparse::{PacketHeaders, IpHeader, TransportHeader};
+use etherparse::{PacketBuilder, PacketHeaders, IpHeader, TransportHeader};
 
 // pcap is only imported on Unix systems
 #[cfg(unix)]
@@ -24,6 +24,15 @@ impl From<etherparse::Ipv4Header> for PyIpv4Header {
             destination: header.destination,
             ttl: header.time_to_live,
         }
+    }
+}
+
+#[pymethods]
+impl PyIpv4Header {
+    /// Create a new IPv4 header instance for packet construction.
+    #[new]
+    pub fn new(source: [u8; 4], destination: [u8; 4], ttl: u8) -> Self {
+        PyIpv4Header { source, destination, ttl }
     }
 }
 
@@ -51,6 +60,20 @@ impl From<etherparse::TcpHeader> for PyTcpHeader {
     }
 }
 
+#[pymethods]
+impl PyTcpHeader {
+    /// Create a new TCP header instance for packet construction.
+    #[new]
+    pub fn new(source_port: u16, destination_port: u16, syn: bool, ack: bool) -> Self {
+        PyTcpHeader {
+            source_port,
+            destination_port,
+            syn,
+            ack,
+        }
+    }
+}
+
 #[pyclass]
 #[derive(Debug, Clone)]
 pub struct PyEthernetHeader {
@@ -69,6 +92,42 @@ impl From<etherparse::Ethernet2Header> for PyEthernetHeader {
             destination: header.destination,
             ether_type: header.ether_type,
         }
+    }
+}
+
+#[pymethods]
+impl PyEthernetHeader {
+    /// Create a new Ethernet II header instance for packet construction.
+    #[new]
+    pub fn new(source: [u8; 6], destination: [u8; 6], ether_type: u16) -> Self {
+        PyEthernetHeader { source, destination, ether_type }
+    }
+}
+
+#[pyclass]
+#[derive(Debug, Clone)]
+pub struct PyUdpHeader {
+    #[pyo3(get)]
+    pub source_port: u16,
+    #[pyo3(get)]
+    pub destination_port: u16,
+}
+
+impl From<etherparse::UdpHeader> for PyUdpHeader {
+    fn from(header: etherparse::UdpHeader) -> Self {
+        PyUdpHeader {
+            source_port: header.source_port,
+            destination_port: header.destination_port,
+        }
+    }
+}
+
+#[pymethods]
+impl PyUdpHeader {
+    /// Create a new UDP header instance for packet construction.
+    #[new]
+    pub fn new(source_port: u16, destination_port: u16) -> Self {
+        PyUdpHeader { source_port, destination_port }
     }
 }
 
@@ -129,6 +188,26 @@ pub fn parse_packet(data: &[u8]) -> PyResult<ParsedPacket> {
     }
 }
 
+#[pyfunction]
+pub fn build_packet(
+    ethernet: PyRef<'_, PyEthernetHeader>,
+    ip: PyRef<'_, PyIpv4Header>,
+    udp: PyRef<'_, PyUdpHeader>,
+    payload: &[u8],
+) -> PyResult<Vec<u8>> {
+    let builder = PacketBuilder::ethernet2(ethernet.source, ethernet.destination)
+        .ipv4(ip.source, ip.destination, ip.ttl)
+        .udp(udp.source_port, udp.destination_port);
+    let mut packet = Vec::with_capacity(builder.size(payload.len()));
+    builder
+        .write(&mut packet, payload)
+        .map_err(|e| pyo3::exceptions::PyValueError::new_err(format!(
+            "Building failed: {}",
+            e
+        )))?;
+    Ok(packet)
+}
+
 // Real implementation for Unix systems
 #[cfg(unix)]
 #[pyfunction]
@@ -183,10 +262,12 @@ pub fn parse_pcap_file(_py: Python<'_>, _path: String) -> PyResult<Py<PyList>> {
 fn pytherparse_native(_py: Python, m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(parse_packet, m)?)?;
     m.add_function(wrap_pyfunction!(parse_pcap_file, m)?)?;
+    m.add_function(wrap_pyfunction!(build_packet, m)?)?;
     m.add_class::<ParsedPacket>()?;
     m.add_class::<PyIpv4Header>()?;
     m.add_class::<PyTcpHeader>()?;
     m.add_class::<PyEthernetHeader>()?;
+    m.add_class::<PyUdpHeader>()?;
     m.add_class::<PyIcmpv6Header>()?;
     Ok(())
 }
