@@ -1,8 +1,10 @@
 from .pytherparse_native import (
     parse_packet,
     parse_pcap_file,
+    build_packet,
     ParsedPacket,
     PyIpv4Header,
+    PyUdpHeader,
     PyTcpHeader,
     PyEthernetHeader,
 )
@@ -19,8 +21,10 @@ __all__ = [
     "parse",
     "parse_packet",
     "parse_pcap_file",
+    "build_packet",
     "ParsedPacket",
     "PyIpv4Header",
+    "PyUdpHeader",
     "PyTcpHeader",
     "PyEthernetHeader",
 ]
