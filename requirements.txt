@@ -1,0 +1,5 @@
+# Build dependencies
+maturin>=1.0.0
+
+# Development dependencies
+pytest>=7.0.0
